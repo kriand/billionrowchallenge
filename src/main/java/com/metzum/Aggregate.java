@@ -106,14 +106,14 @@ public class Aggregate {
                             result = new Result(stationNameStartAddress, stationNameNumBytes, m, m, m, 1);
                             results.put(stationNameHash, result);
                         } else {
-                            if (m < result.min()) {
-                                result.setMin(m);
+                            if (m < result.min) {
+                                result.min = m;
                             }
-                            if (m > result.max()) {
-                                result.setMax(m);
+                            if (m > result.max) {
+                                result.max = m;
                             }
-                            result.setSum(result.sum() + m);
-                            result.setMeasurements(result.measurements() + 1);
+                            result.sum = result.sum + m;
+                            result.measurements = result.measurements + 1;
                         }
                     }
                     return results;
@@ -140,18 +140,18 @@ public class Aggregate {
                       .flatMap(m -> m.entrySet().stream())
                       .collect(Collectors.groupingBy(Map.Entry::getKey,
                               mapping(Map.Entry::getValue, reducing((r1, r2) -> {
-                                  r1.setMin(Math.min(r1.min(), r2.min()));
-                                  r1.setMax(Math.max(r1.max(), r2.max()));
-                                  r1.setSum(r1.sum() + r2.sum());
-                                  r1.setMeasurements(r1.measurements() + r2.measurements());
+                                  r1.min = Math.min(r1.min, r2.min);
+                                  r1.max = Math.max(r1.max, r2.max);
+                                  r1.sum = r1.sum + r2.sum;
+                                  r1.measurements = r1.measurements + r2.measurements;
                                   return r1;
                               }))))
                       .values()
                       .stream()
                       .flatMap(Optional::stream)
                       .map(r -> new FinalResult(
-                              getStationName(buffer, r.getStationNameStartAddress(), r.getStationNameNumBytes()), r.min(),
-                              r.max(), r.sum(), r.measurements()))
+                              getStationName(buffer, r.stationNameStartAddress, r.stationNameNumBytes), r.min,
+                              r.max, r.sum, r.measurements))
                       .toList();
     }
 
@@ -175,12 +175,12 @@ public class Aggregate {
     }
 
     static final class Result {
-        private final long stationNameStartAddress;
-        private final int stationNameNumBytes;
-        private int min;
-        private int max;
-        private int sum;
-        private int measurements;
+        public final long stationNameStartAddress;
+        public final int stationNameNumBytes;
+        public int min;
+        public int max;
+        public int sum;
+        public int measurements;
 
         Result(long stationNameStartAddress, int stationNameNumBytes, int min, int max, int sum, int measurements) {
             this.stationNameStartAddress = stationNameStartAddress;
@@ -189,46 +189,6 @@ public class Aggregate {
             this.max = max;
             this.sum = sum;
             this.measurements = measurements;
-        }
-
-        public int min() {
-            return min;
-        }
-
-        public int max() {
-            return max;
-        }
-
-        public int sum() {
-            return sum;
-        }
-
-        public int measurements() {
-            return measurements;
-        }
-
-        public void setMin(int min) {
-            this.min = min;
-        }
-
-        public void setMax(int max) {
-            this.max = max;
-        }
-
-        public void setSum(int sum) {
-            this.sum = sum;
-        }
-
-        public void setMeasurements(int measurements) {
-            this.measurements = measurements;
-        }
-
-        public long getStationNameStartAddress() {
-            return stationNameStartAddress;
-        }
-
-        public int getStationNameNumBytes() {
-            return stationNameNumBytes;
         }
     }
 
